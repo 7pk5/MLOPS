@@ -1,0 +1,80 @@
+# Importing necessary libraries
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, precision_recall_curve, auc
+
+# 1. Load and Preprocess Data (For simplicity, using a dataset from seaborn)
+# We'll use the 'Titanic' dataset for this task
+df = sns.load_dataset('titanic')
+
+# Drop rows with missing target variable and columns not relevant for prediction
+df.dropna(subset=['survived'], inplace=True)
+
+# Option 1: Drop rows with missing values
+df = df.dropna()
+
+# OR
+
+# Option 2: Fill missing values with the mean
+# df = df.fillna(df.mean())
+
+# Drop additional columns not necessary for prediction
+df = df.drop(columns=['embarked', 'who', 'deck', 'embark_town', 'alive', 'alone', 'class', 'pclass'])
+
+# Convert categorical variables into numeric using pandas' get_dummies
+df = pd.get_dummies(df, drop_first=True)
+
+# Define the features (X) and the target variable (y)
+X = df.drop(columns=['survived'])
+y = df['survived']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# 2. Train Logistic Regression Model
+
+# Logistic Regression Model
+logreg = LogisticRegression(max_iter=1000)
+logreg.fit(X_train, y_train)
+
+# 3. Predictions and Evaluation
+
+# Logistic Regression Predictions
+y_pred_logreg = logreg.predict(X_test)
+y_prob_logreg = logreg.predict_proba(X_test)[:, 1]
+
+# 4. Confusion Matrix
+
+# Logistic Regression Confusion Matrix
+cm_logreg = confusion_matrix(y_test, y_pred_logreg)
+
+# Plot Confusion Matrix
+plt.figure(figsize=(6, 5))
+sns.heatmap(cm_logreg, annot=True, fmt='d', cmap='Blues')
+plt.title('Logistic Regression Confusion Matrix')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.show()
+
+# 5. Precision-Recall Curve
+
+# Logistic Regression Precision-Recall Curve
+precision_logreg, recall_logreg, _ = precision_recall_curve(y_test, y_prob_logreg)
+pr_auc_logreg = auc(recall_logreg, precision_logreg)
+
+# Plot Precision-Recall Curve
+plt.figure(figsize=(8, 6))
+plt.plot(recall_logreg, precision_logreg, label=f'Logistic Regression (AUC = {pr_auc_logreg:.2f})')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve')
+plt.legend(loc='best')
+plt.grid(True)
+plt.show()
+
+# 6. Compare Performance
+
+print("Logistic Regression Precision-Recall AUC:", pr_auc_logreg)
