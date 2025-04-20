@@ -1,0 +1,44 @@
+import pandas as pd
+from sklearn.datasets import load_iris
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import pickle
+import matplotlib.pyplot as plt
+
+# Load dataset
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# First model
+model1 = LogisticRegression(C=1.0, max_iter=200)
+model1.fit(X_train, y_train)
+pred1 = model1.predict(X_test)
+acc1 = accuracy_score(y_test, pred1)
+print("Model v1 Accuracy:", acc1)
+pickle.dump(model1, open("model_v1.pkl", "wb"))
+
+# Second model
+model2 = LogisticRegression(C=0.5, max_iter=200)
+model2.fit(X_train, y_train)
+pred2 = model2.predict(X_test)
+acc2 = accuracy_score(y_test, pred2)
+print("Model v2 Accuracy:", acc2)
+pickle.dump(model2, open("model_v2.pkl", "wb"))
+
+# Plot accuracy comparison
+models = ['Model v1 (C=1.0)', 'Model v2 (C=0.5)']
+accuracies = [acc1, acc2]
+
+plt.figure(figsize=(6, 5))
+plt.bar(models, accuracies, color=['blue', 'green'])
+plt.title('Model Accuracy Comparison')
+plt.ylabel('Accuracy')
+plt.ylim(0, 1)
+plt.grid(axis='y')
+plt.tight_layout()
+plt.show()
